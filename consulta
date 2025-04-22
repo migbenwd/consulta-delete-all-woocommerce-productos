@@ -1,0 +1,48 @@
+-- 1. Eliminar todos los productos (simples, variables, agrupados, etc.) y sus variaciones
+DELETE FROM wp_posts
+WHERE post_type IN ('product', 'product_variation');
+
+-- 2. Eliminar todos los metadatos asociados a los productos eliminados
+DELETE pm
+FROM wp_postmeta pm
+LEFT JOIN wp_posts p ON pm.post_id = p.ID
+WHERE p.ID IS NULL;
+
+-- 3. Eliminar relaciones de términos asociadas a los productos eliminados
+DELETE tr
+FROM wp_term_relationships tr
+LEFT JOIN wp_posts p ON tr.object_id = p.ID
+WHERE p.ID IS NULL;
+
+-- 4. Eliminar términos huérfanos de la tabla wp_term_taxonomy
+DELETE tt
+FROM wp_term_taxonomy tt
+LEFT JOIN wp_term_relationships tr ON tt.term_taxonomy_id = tr.term_taxonomy_id
+WHERE tr.term_taxonomy_id IS NULL;
+
+-- 5. Eliminar términos huérfanos de la tabla wp_terms
+DELETE t
+FROM wp_terms t
+LEFT JOIN wp_term_taxonomy tt ON t.term_id = tt.term_id
+WHERE tt.term_id IS NULL;
+
+-- 6. Eliminar transients relacionados con productos de WooCommerce (caché temporal)
+DELETE FROM wp_options WHERE option_name LIKE '_transient_wc_%' OR option_name LIKE '_transient_timeout_wc_%';
+
+-- 7. Eliminar datos de variaciones en la tabla WooCommerce Product Meta Lookups
+DELETE FROM wp_wc_product_meta_lookup WHERE product_id NOT IN (SELECT ID FROM wp_posts);
+
+-- 8. Eliminar datos de inventario relacionados con productos eliminados
+DELETE FROM wp_woocommerce_stock_manager WHERE product_id NOT IN (SELECT ID FROM wp_posts);
+
+-- 9. Eliminar datos huérfanos de pedidos relacionados con productos eliminados
+DELETE woi
+FROM wp_woocommerce_order_items woi
+LEFT JOIN wp_posts p ON woi.order_item_id = p.ID
+WHERE p.ID IS NULL;
+
+-- 10. Eliminar metadatos huérfanos de pedidos relacionados con productos eliminados
+DELETE woim
+FROM wp_woocommerce_order_itemmeta woim
+LEFT JOIN wp_woocommerce_order_items woi ON woim.order_item_id = woi.order_item_id
+WHERE woi.order_item_id IS NULL;
