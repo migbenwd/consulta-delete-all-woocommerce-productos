@@ -32,16 +32,13 @@ DELETE FROM wp_options WHERE option_name LIKE '_transient_wc_%' OR option_name L
 -- 7. Eliminar datos de variaciones en la tabla WooCommerce Product Meta Lookups
 DELETE FROM wp_wc_product_meta_lookup WHERE product_id NOT IN (SELECT ID FROM wp_posts);
 
--- 8. Eliminar datos de inventario relacionados con productos eliminados
-DELETE FROM wp_woocommerce_stock_manager WHERE product_id NOT IN (SELECT ID FROM wp_posts);
-
--- 9. Eliminar datos huérfanos de pedidos relacionados con productos eliminados
+-- 8. Eliminar datos huérfanos de pedidos relacionados con productos eliminados
 DELETE woi
 FROM wp_woocommerce_order_items woi
 LEFT JOIN wp_posts p ON woi.order_item_id = p.ID
 WHERE p.ID IS NULL;
 
--- 10. Eliminar metadatos huérfanos de pedidos relacionados con productos eliminados
+-- 9. Eliminar metadatos huérfanos de pedidos relacionados con productos eliminados
 DELETE woim
 FROM wp_woocommerce_order_itemmeta woim
 LEFT JOIN wp_woocommerce_order_items woi ON woim.order_item_id = woi.order_item_id
