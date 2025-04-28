@@ -1,0 +1,11 @@
+SELECT 
+    parents.post_status AS parent_status,
+    COUNT(*) AS total_variations,
+    MIN(variations.post_modified) AS earliest_update,
+    MAX(variations.post_modified) AS latest_update,
+    TIMEDIFF(MAX(variations.post_modified), MIN(variations.post_modified)) AS total_time_difference
+FROM wp_posts AS variations
+INNER JOIN wp_posts AS parents ON variations.post_parent = parents.ID
+WHERE variations.post_type = 'product_variation'
+  AND parents.post_status IN ('draft', 'publish')
+GROUP BY parents.post_status;
